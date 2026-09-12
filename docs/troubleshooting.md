@@ -124,7 +124,7 @@ accept variable latency. This is inherent to the device, not fixable here.
 `temp`) or CPU-bound driver spin. 47-82% busy with steady tok/s is the
 healthy signature on the reference device.
 
-### Server API behaves oddly behind 9Router-style gateways
+### Server API behaves oddly behind API gateways / proxies
 
 Not this stack's problem — llama.cpp returns plain OpenAI-format responses;
 health is `{"status":"ok"}`. Gateways that wrap responses in
