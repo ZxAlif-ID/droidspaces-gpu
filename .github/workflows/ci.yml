@@ -1,0 +1,112 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: shell + script lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+
+      - name: bash -n (syntax) on every shell script
+        run: |
+          set -e
+          for f in install.sh scripts/*.sh demo/gen_header.sh; do
+            bash -n "$f"
+            echo "syntax OK: $f"
+          done
+
+      - name: shellcheck
+        run: |
+          # SC1090/1091: dynamic sourcing of gpu-env.sh is intentional.
+          shellcheck -x --severity=warning \
+            install.sh scripts/*.sh demo/gen_header.sh
+
+      - name: installer dry-run must list all stages and exit 0
+        run: ./install.sh --dry-run
+
+  demo-build:
+    name: build compute demo (x86_64 cross-check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Vulkan loader + build tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq cmake gcc libvulkan-dev
+
+      - name: Build demo (uses committed shader_spv.h)
+        run: |
+          cmake -S demo -B demo/build -DCMAKE_BUILD_TYPE=Release
+          cmake --build demo/build -j"$(nproc)"
+
+      - name: Binary exists and is executable
+        run: test -x demo/build/gpu-demo && file demo/build/gpu-demo
+
+      # The demo requires an Adreno GPU; on the CI runner it must FAIL
+      # FAST with the "no Adreno device" path, not crash. Exit code 2 is
+      # the documented no-GPU outcome.
+      - name: Demo exits cleanly (code 2) when no GPU is present
+        run: |
+          set +e
+          demo/build/gpu-demo 2>err.log; rc=$?
+          set -e
+          echo "exit=$rc"
+          cat err.log
+          if [ "$rc" -eq 2 ] && grep -Eq "no Adreno device|no Vulkan physical devices" err.log; then
+            echo "clean no-GPU exit as expected on a runner without KGSL"
+          else
+            echo "unexpected behavior without GPU (rc=$rc)" >&2
+            exit 1
+          fi
+
+  metadata:
+    name: repository metadata
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: CITATION.cff is valid YAML with required keys
+        run: |
+          python3 - <<'PY'
+          import sys
+          try:
+              import yaml
+          except ImportError:
+              sys.exit("PyYAML not available")
+          c = yaml.safe_load(open("CITATION.cff"))
+          for key in ("cff-version", "title", "authors", "repository-code",
+                      "license", "version", "date-released"):
+              assert key in c, f"missing key: {key}"
+          assert c["cff-version"].startswith("1.2")
+          print("CITATION.cff OK")
+          PY
+
+      - name: Community files present
+        run: |
+          for f in README.md LICENSE CONTRIBUTING.md CODE_OF_CONDUCT.md \
+                   SECURITY.md CITATION.cff .github/workflows/ci.yml \
+                   docs/architecture.md docs/troubleshooting.md \
+                   docs/glibc-compat.md docs/kgsl-sysfs.md docs/llama-workload.md; do
+            test -s "$f" || { echo "missing or empty: $f"; exit 1; }
+            echo "present: $f"
+          done
+
+      - name: README badge URLs point at this repo
+        run: |
+          grep -q 'ZxAlif-ID/droidspaces-gpu/actions/workflows/ci.yml/badge.svg' README.md
+          grep -q 'badge/License-MIT' README.md
+          echo "badges OK"

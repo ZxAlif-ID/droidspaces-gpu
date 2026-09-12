@@ -1,0 +1,15 @@
+#version 450
+// shader.comp — demo compute kernel for gpu_demo.c
+// One storage buffer of 256 floats; each invocation computes
+//   v[i] = v[i]*v[i] + i
+// Results depend on both the input value and the dispatch index, so a
+// correct readback proves the dispatch actually executed on the device.
+layout(local_size_x = 64) in;
+layout(std430, binding = 0) buffer Data { float v[]; };
+
+void main() {
+    uint i = gl_GlobalInvocationID.x;
+    if (i >= 256u) return;
+    float x = v[i];
+    v[i] = x * x + float(i);
+}

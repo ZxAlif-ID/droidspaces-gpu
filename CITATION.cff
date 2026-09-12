@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+title: droidspaces-gpu — real Adreno GPU access from a Droidspaces Ubuntu rootfs via turnip + kgsl
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - name: ZxAlif-ID
+    website: 'https://github.com/ZxAlif-ID'
+repository-code: 'https://github.com/ZxAlif-ID/droidspaces-gpu'
+abstract: >-
+  Tools and documentation for using a mobile Qualcomm Adreno GPU
+  (KGSL kernel interface) from inside a Droidspaces / proot Ubuntu
+  aarch64 rootfs, using Mesa's turnip Vulkan driver with a glibc
+  compatibility shim, a patched ICD, a modern glslang build, and a
+  minimal verified Vulkan compute demo.
+keywords:
+  - adreno
+  - turnip
+  - vulkan
+  - kgsl
+  - droidspaces
+  - android
+  - ubuntu
+  - proot
+license: MIT
+version: v1.0.0
+date-released: '2026-09-12'

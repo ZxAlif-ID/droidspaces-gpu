@@ -1,0 +1,16 @@
+# build artifacts
+demo/build/
+demo/*.spv
+*.o
+*.so
+*.a
+
+# editors / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# runtime junk
+*.log
+*.pid
