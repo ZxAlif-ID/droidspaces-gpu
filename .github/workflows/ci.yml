@@ -66,7 +66,7 @@ jobs:
           set -e
           echo "exit=$rc"
           cat err.log
-          if [ "$rc" -eq 2 ] && grep -Eq "no Adreno device|no Vulkan physical devices" err.log; then
+          if [ "$rc" -eq 2 ] && grep -Eq "no Adreno device|no Vulkan physical devices|no usable Vulkan" err.log; then
             echo "clean no-GPU exit as expected on a runner without KGSL"
           else
             echo "unexpected behavior without GPU (rc=$rc)" >&2

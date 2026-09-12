@@ -70,7 +70,14 @@ int main(void) {
     ici.pApplicationInfo = &app;
 
     VkInstance instance;
-    CHECK(vkCreateInstance(&ici, NULL, &instance));
+    /* A broken/no Vulkan install (missing ICDs, dangling layers) is the
+     * documented "no GPU here" outcome — exit 2, not a crash. */
+    VkResult ir = vkCreateInstance(&ici, NULL, &instance);
+    if (ir != VK_SUCCESS) {
+        fprintf(stderr, "no usable Vulkan on this system: vkCreateInstance = %d\n"
+                "  (-9 = VK_ERROR_LAYER_NOT_PRESENT: dangling layer config)\n", (int)ir);
+        return 2;
+    }
 
     /* 2. pick the Adreno physical device (never llvmpipe) --------------- */
     uint32_t n = 0;
