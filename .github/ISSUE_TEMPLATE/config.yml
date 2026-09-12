@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions / usage help
+    url: https://github.com/ZxAlif-ID/droidspaces-gpu/discussions
+    about: Ask before filing a bug if you are unsure it is one.
