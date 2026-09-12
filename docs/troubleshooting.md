@@ -140,5 +140,6 @@ sudo ./install.sh                # full reinstall, ~30-40 min on the reference d
 source scripts/gpu-env.sh && bash scripts/70-verify.sh
 ```
 
-`/opt` is outside `$HOME`, so it survives the rootfs restore script
-(`~/UB24.04.04/restore.sh` touches `$HOME` + `/etc` only).
+`/opt` is outside `$HOME`, so it survives rootfs restore/backup scripts
+that only overwrite `$HOME` + `/etc` (the common pattern for proot
+backup tooling).
